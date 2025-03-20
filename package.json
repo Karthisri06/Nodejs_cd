@@ -4,5 +4,10 @@
     "express": "^4.21.2",
     "mysql": "^2.18.1",
     "mysql2": "^3.13.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsc": "^2.0.4",
+    "typescript": "^5.8.2"
   }
 }
