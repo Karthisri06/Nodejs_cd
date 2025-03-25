@@ -1,18 +1,19 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../entity/User";
+import { AppDataSource } from "../data-source";
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (req: Request, res: Response): Promise<void> => {
     const { name, email, password } = req.body;
 
     try {
-        const userRepository = getRepository(User);
+        const userRepository =AppDataSource. getRepository(User);
 
         const existingUser = await userRepository.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: "User with this email already exists!" });
+            res.status(400).json({ message: "User with this email already exists!" });
+            return
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,7 +25,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
         await userRepository.save(newUser);
 
-        return res.status(201).json({
+        res.status(201).json({
             message: "User registered successfully",
             user: {
                 id: newUser.id,
@@ -32,36 +33,42 @@ export const registerUser = async (req: Request, res: Response) => {
                 email: newUser.email
             }
         });
+        return 
     } catch (error) {
-        return res.status(500).json({ message: "Error during registration", error });
+        res.status(500).json({ message: "Error during registration", error });
+        return 
     }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: Response):Promise<void> => {
     const { email, password } = req.body;
 
     try {
-        const userRepository = getRepository(User);
+        const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOne({ where: { email } });
         if (!user) {
-            return res.status(400).json({ message: "User not found" });
+            res.status(400).json({ message: "User not found" });
+            return
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(400).json({ message: "Invalid password" });
+             res.status(400).json({ message: "Invalid password" });
+             return
         }
 
         const token = jwt.sign(
             { id: user.id, name: user.name, email: user.email },
-            process.env.SECRET_KEY!, 
-            { expiresIn: "1h" } 
+            process.env.JWT_SECRET!, 
+            { expiresIn: "7d" } 
         );
 
-        return res.status(200).json({
+        res.status(200).json({
             message: "Login successful",
             token
         });
+        return
     } catch (error) {
-        return res.status(500).json({ message: "Error during login", error });
+         res.status(500).json({ message: "Error during login", error });
+         return
     }
 };

@@ -3,32 +3,26 @@ import express from "express";
 import "reflect-metadata";
 import { AppDataSource } from "./data-source";
 import { Request, Response } from "express";
-import route from "./routes/route";
+// import router from "./routes/route";
+import router from "./routes/auth.route"
+import dotenv from 'dotenv'
+dotenv.config()
 const app: express.Application = express();
 app.use(express.json());
-app.use("/user", route);
+// app.use("/user", routers);
+app.use("/auth", router);
 
-app.get("/check", (req: any, res: any) => {
-  console.log("checking");
-  return res.status(200).json({ message: " Express Works" });
-});
-app.get("/",(req,res)=>{
-    res.send("Hi");
-})
-const port: number = 3000;
+const port: number = 5500;
 app.listen(port, async () => {
   try {
     await AppDataSource.initialize();
     console.log("connected to mysql");
-    console.log('Server running on port 4000');
+    console.log('Server running on port 5500');
   } catch (error) {
     console.log("database error", error);
   }
 });
-// // Handling '/' Request
-// app.get('/', (_req, _res) => {
-//     _res.send("TypeScript With Express");
-// });
+
 
 
 
